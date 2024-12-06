@@ -33,7 +33,7 @@
     /* Upload section */
     #uploadSection {
       text-align: center;
-      padding: 20px 0;
+      padding: 20px 10px;
       background: #333; /* Same dark grey as body */
       position: sticky;
       top: 70px; /* Below the title */
@@ -44,9 +44,14 @@
 
     #uploadForm {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px; /* Add spacing between elements */
+      gap: 10px;
+    }
+
+    #uploadForm span {
+      font-size: 14px;
+      color: #fff; /* White text */
     }
 
     #uploadForm input[type="file"] {
@@ -71,8 +76,8 @@
 
     .upload-button {
       padding: 10px 20px;
-      background-color: #fff; /* White background */
-      color: #333; /* Dark grey text */
+      background-color: #333; /* Same grey as background */
+      color: #fff; /* White text */
       border: none;
       border-radius: 5px;
       font-size: 14px;
@@ -82,7 +87,7 @@
     }
 
     .upload-button:hover {
-      background-color: #f0f0f0; /* Slightly lighter grey */
+      background-color: #444; /* Slightly lighter grey */
     }
 
     .upload-button:active {
@@ -116,8 +121,8 @@
       filter: brightness(0.8);
     }
 
-    .photo-container:hover .delete-overlay {
-      display: flex;
+    .photo-container:active .delete-overlay {
+      display: flex; /* Show delete overlay on long-press */
     }
 
     .delete-overlay {
@@ -174,6 +179,7 @@
   <!-- Upload Section -->
   <div id="uploadSection">
     <form id="uploadForm" enctype="multipart/form-data">
+      <span>No file chosen</span>
       <input type="file" name="photo" accept="image/*" required>
       <button class="upload-button" type="submit">Upload Photo</button>
     </form>
@@ -188,7 +194,7 @@
   </div>
 
   <script>
-    const baseURL = window.location.origin; // Automatically use the correct domain
+    const baseURL = window.location.origin;
     const gallery = document.getElementById('gallery');
     const uploadSection = document.getElementById('uploadSection');
     const autoScrollButton = document.getElementById('toggleAutoScroll');
@@ -200,15 +206,12 @@
     // Show/Hide Upload Section on Scroll
     window.addEventListener('scroll', () => {
       if (window.scrollY < lastScrollY) {
-        // Show upload section when scrolling up
         uploadSection.style.display = 'block';
       } else if (window.scrollY > 100) {
-        // Hide upload section when scrolling down
         uploadSection.style.display = 'none';
       }
       lastScrollY = window.scrollY;
 
-      // Stop auto-scrolling if the user manually scrolls
       if (isAutoScrolling) {
         userScrolling = true;
         clearInterval(autoScrollInterval);
@@ -222,8 +225,6 @@
       try {
         const response = await fetch(`${baseURL}/photos`);
         const photos = await response.json();
-
-        // Update gallery with images
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
             <img 
@@ -256,7 +257,7 @@
 
         if (response.ok) {
           alert('Photo deleted successfully!');
-          loadPhotos(); // Refresh the gallery
+          loadPhotos();
         } else {
           alert('Failed to delete photo.');
         }
@@ -276,11 +277,11 @@
 
       autoScrollInterval = setInterval(() => {
         if (!userScrolling && gallery.scrollTop + gallery.clientHeight < gallery.scrollHeight) {
-          gallery.scrollBy(0, 2); // Scroll down by 2px per interval
+          gallery.scrollBy(0, 2);
         } else if (!userScrolling && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
-          gallery.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll back to top
+          gallery.scrollTo({ top: 0, behavior: 'smooth' });
         }
-      }, 30); // Adjust interval speed (30ms)
+      }, 30);
     }
 
     function stopAutoScroll() {
@@ -300,19 +301,18 @@
     // Handle photo uploads
     const uploadForm = document.getElementById('uploadForm');
     uploadForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent the default form submission behavior
-
-      const formData = new FormData(uploadForm); // Create FormData object with the form data
+      e.preventDefault(); // Prevent default form submission behavior
+      const formData = new FormData(uploadForm); // Create FormData object from the form
 
       try {
         const response = await fetch(`${baseURL}/upload`, {
-          method: 'POST', // Use POST method for uploading
-          body: formData, // Send the FormData object as the body
+          method: 'POST', // Use POST to send the file
+          body: formData, // Attach form data
         });
 
         if (response.ok) {
           alert('Photo uploaded successfully!');
-          loadPhotos(); // Refresh the photo gallery after a successful upload
+          loadPhotos(); // Reload the gallery to include the new photo
         } else {
           alert('Failed to upload photo.');
         }
@@ -322,5 +322,5 @@
       }
     });
 
-    // Load photos on page load
+    // Load photos when the page is loaded
     loadPhotos();
