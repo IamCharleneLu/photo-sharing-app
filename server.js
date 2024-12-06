@@ -7,10 +7,6 @@ const fs = require('fs');
 // Initialize the app
 const app = express();
 const PORT = process.env.PORT || 3000; // Use the environment PORT or default to 3000
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
-
 
 // Define the directory to store uploaded files
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
@@ -38,16 +34,15 @@ app.use(express.json());
 
 // Route to upload a photo
 app.post('/upload', upload.single('photo'), (req, res) => {
-    console.log('File upload request received.');
-    if (!req.file) {
-      console.error('No file uploaded.');
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-  
-    console.log('File uploaded successfully:', req.file);
-    res.status(200).json({ message: 'Photo uploaded successfully!', path: req.file.filename });
-  });
-  
+  console.log('File upload request received.');
+  if (!req.file) {
+    console.error('No file uploaded.');
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  console.log('File uploaded successfully:', req.file);
+  res.status(200).json({ message: 'Photo uploaded successfully!', path: req.file.filename });
+});
 
 // Route to get all uploaded photos
 app.get('/photos', (req, res) => {
