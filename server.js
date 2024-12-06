@@ -64,6 +64,30 @@ app.get('/photos', (req, res) => {
   });
 });
 
+// Route to delete a specific photo
+app.delete('/photos/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(UPLOAD_DIR, filename);
+
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error(`File not found: ${filename}`);
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Error deleting file: ${filename}`, err);
+        return res.status(500).json({ error: 'Failed to delete file' });
+      }
+
+      console.log(`File deleted: ${filename}`);
+      res.status(200).json({ message: 'File deleted successfully' });
+    });
+  });
+});
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
