@@ -32,6 +32,11 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
+// Route to serve the index.html file at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Route to upload a photo
 app.post('/upload', upload.single('photo'), (req, res) => {
   console.log('File upload request received.');
