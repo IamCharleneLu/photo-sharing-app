@@ -14,17 +14,20 @@
       overflow-x: hidden;
     }
 
-    /* Curio title */
+    /* Curio title/logo section */
     #curioTitle {
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 20px 0;
       background: #333; /* Same dark grey as body */
-      font-size: 2rem;
-      font-weight: bold;
-      color: #fff;
       position: sticky;
       top: 0;
       z-index: 10;
+    }
+
+    #curioLogo {
+      height: 50px; /* Set logo height */
     }
 
     /* Upload section */
@@ -33,35 +36,56 @@
       padding: 20px 0;
       background: #333; /* Same dark grey as body */
       position: sticky;
-      top: 50px; /* Below the title */
+      top: 70px; /* Below the title */
       z-index: 9;
       display: none; /* Hidden by default */
       transition: transform 0.3s ease;
     }
 
-    #uploadForm input[type="file"] {
-      display: block;
-      margin: 10px auto;
+    #uploadForm {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px; /* Add spacing between elements */
     }
 
-    .rounded-button {
-      padding: 10px 20px;
-      border: 2px solid #fff; /* White border */
-      background-color: transparent;
+    #uploadForm input[type="file"] {
+      display: inline-block;
       color: #fff; /* White text */
-      border-radius: 30px;
-      font-size: 16px;
+      background-color: #000; /* Black background */
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #uploadForm input[type="file"]::-webkit-file-upload-button {
+      background: #000; /* Black background */
+      color: #fff; /* White text */
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .upload-button {
+      padding: 10px 20px;
+      background-color: #fff; /* White background */
+      color: #333; /* Dark grey text */
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .rounded-button:hover {
-      background-color: #fff; /* White background on hover */
-      color: #333; /* Dark grey text on hover */
+    .upload-button:hover {
+      background-color: #f0f0f0; /* Slightly lighter grey */
     }
 
-    .rounded-button:active {
+    .upload-button:active {
       transform: scale(0.95);
     }
 
@@ -88,27 +112,46 @@
       display: block;
     }
 
-    .photo-container:hover img {
-      filter: brightness(0.8);
-    }
-
     /* Auto display button */
     #autoDisplay {
       margin: 20px auto;
       text-align: center;
       padding: 20px 0;
     }
+
+    .rounded-button {
+      padding: 10px 20px;
+      border: 2px solid #fff; /* White border */
+      background-color: transparent;
+      color: #fff; /* White text */
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .rounded-button:hover {
+      background-color: #fff; /* White background on hover */
+      color: #333; /* Dark grey text on hover */
+    }
+
+    .rounded-button:active {
+      transform: scale(0.95);
+    }
   </style>
 </head>
 <body>
-  <!-- Curio Title -->
-  <div id="curioTitle">Curio</div>
+  <!-- Curio Title/Logo -->
+  <div id="curioTitle">
+    <img id="curioLogo" src="./Asset%201.svg" alt="Curio Logo">
+  </div>
 
   <!-- Upload Section -->
   <div id="uploadSection">
     <form id="uploadForm" enctype="multipart/form-data">
       <input type="file" name="photo" accept="image/*" required>
-      <button class="rounded-button" type="submit">Upload Photo</button>
+      <button class="upload-button" type="submit">Upload Photo</button>
     </form>
   </div>
 
