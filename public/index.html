@@ -103,6 +103,29 @@
       align-items: center;
       cursor: pointer;
     }
+
+    /* Auto Display Button */
+    #autoDisplayButton {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .rounded-button {
+      padding: 10px 20px;
+      border: 2px solid #fff;
+      background-color: transparent;
+      color: #fff;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .rounded-button:hover {
+      background-color: #fff;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -122,9 +145,19 @@
   <!-- Photo Gallery -->
   <div id="gallery"></div>
 
+  <!-- Auto Display Button -->
+  <div id="autoDisplayButton">
+    <button class="rounded-button" id="toggleAutoDisplay">Auto Display</button>
+  </div>
+
   <script>
     const gallery = document.getElementById('gallery');
     const uploadForm = document.getElementById('uploadForm');
+    const autoDisplayButton = document.getElementById('toggleAutoDisplay');
+
+    let isAutoScrolling = false;
+    let autoScrollInterval = null;
+    let userScrolling = false;
 
     // Fetch and display photos
     async function loadPhotos() {
@@ -183,6 +216,46 @@
         console.error('Error deleting photo:', err);
       }
     }
+
+    // Auto Display Functionality
+    function startAutoScroll() {
+      if (isAutoScrolling) return;
+
+      isAutoScrolling = true;
+      autoDisplayButton.textContent = 'Stop Auto Display';
+      userScrolling = false;
+
+      autoScrollInterval = setInterval(() => {
+        if (!userScrolling && gallery.scrollTop + gallery.clientHeight < gallery.scrollHeight) {
+          gallery.scrollBy(0, 2); // Scroll down gradually
+        } else if (!userScrolling && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
+          gallery.scrollTo({ top: 0, behavior: 'smooth' }); // Reset to top
+        }
+      }, 30);
+    }
+
+    function stopAutoScroll() {
+      clearInterval(autoScrollInterval);
+      isAutoScrolling = false;
+      autoDisplayButton.textContent = 'Auto Display';
+    }
+
+    // Toggle Auto Scroll on button click
+    autoDisplayButton.addEventListener('click', () => {
+      if (isAutoScrolling) {
+        stopAutoScroll();
+      } else {
+        startAutoScroll();
+      }
+    });
+
+    // Detect user manual scrolling and stop auto scroll
+    gallery.addEventListener('scroll', () => {
+      if (isAutoScrolling) {
+        userScrolling = true;
+        stopAutoScroll();
+      }
+    });
 
     // Initial photo load
     loadPhotos();
