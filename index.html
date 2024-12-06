@@ -299,4 +299,28 @@
 
     // Handle photo uploads
     const uploadForm = document.getElementById('uploadForm');
-    uploadForm
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevent the default form submission behavior
+
+      const formData = new FormData(uploadForm); // Create FormData object with the form data
+
+      try {
+        const response = await fetch(`${baseURL}/upload`, {
+          method: 'POST', // Use POST method for uploading
+          body: formData, // Send the FormData object as the body
+        });
+
+        if (response.ok) {
+          alert('Photo uploaded successfully!');
+          loadPhotos(); // Refresh the photo gallery after a successful upload
+        } else {
+          alert('Failed to upload photo.');
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+
+    // Load photos on page load
+    loadPhotos();
