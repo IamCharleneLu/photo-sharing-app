@@ -126,6 +126,26 @@
       background-color: #fff;
       color: #333;
     }
+
+    /* Fullscreen Gallery */
+    #fullscreenGallery {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 200;
+      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #fullscreenGallery img {
+      max-width: 90%;
+      max-height: 90%;
+    }
   </style>
 </head>
 <body>
@@ -150,20 +170,24 @@
     <button class="rounded-button" id="toggleAutoDisplay">Auto Display</button>
   </div>
 
+  <!-- Fullscreen Gallery -->
+  <div id="fullscreenGallery"></div>
+
   <script>
     const gallery = document.getElementById('gallery');
     const uploadForm = document.getElementById('uploadForm');
     const autoDisplayButton = document.getElementById('toggleAutoDisplay');
+    const fullscreenGallery = document.getElementById('fullscreenGallery');
 
     let isAutoScrolling = false;
     let autoScrollInterval = null;
-    let userScrolling = false;
+    let photos = [];
 
     // Fetch and display photos
     async function loadPhotos() {
       try {
         const response = await fetch('/photos');
-        const photos = await response.json();
+        photos = await response.json();
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
             <img src="${photo}" alt="Photo">
@@ -218,43 +242,47 @@
     }
 
     // Auto Display Functionality
-    function startAutoScroll() {
-      if (isAutoScrolling) return;
+    function startAutoDisplay() {
+      if (isAutoScrolling || photos.length === 0) return;
 
       isAutoScrolling = true;
-      autoDisplayButton.textContent = 'Stop Auto Display';
-      userScrolling = false;
+      fullscreenGallery.style.display = 'flex';
+      fullscreenGallery.innerHTML = `<img src="${photos[0]}" alt="Photo">`;
+
+      let index = 0;
+      let direction = 1;
 
       autoScrollInterval = setInterval(() => {
-        if (!userScrolling && gallery.scrollTop + gallery.clientHeight < gallery.scrollHeight) {
-          gallery.scrollBy(0, 2); // Scroll down gradually
-        } else if (!userScrolling && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
-          gallery.scrollTo({ top: 0, behavior: 'smooth' }); // Reset to top
+        index += direction;
+        if (index >= photos.length) {
+          index = photos.length - 2;
+          direction = -1; // Reverse direction
+        } else if (index < 0) {
+          index = 1;
+          direction = 1; // Forward direction
         }
-      }, 30);
+        fullscreenGallery.innerHTML = `<img src="${photos[index]}" alt="Photo">`;
+      }, 2000);
     }
 
-    function stopAutoScroll() {
+    function stopAutoDisplay() {
       clearInterval(autoScrollInterval);
       isAutoScrolling = false;
-      autoDisplayButton.textContent = 'Auto Display';
+      fullscreenGallery.style.display = 'none';
     }
 
-    // Toggle Auto Scroll on button click
+    // Toggle Auto Display on button click
     autoDisplayButton.addEventListener('click', () => {
       if (isAutoScrolling) {
-        stopAutoScroll();
+        stopAutoDisplay();
       } else {
-        startAutoScroll();
+        startAutoDisplay();
       }
     });
 
-    // Detect user manual scrolling and stop auto scroll
-    gallery.addEventListener('scroll', () => {
-      if (isAutoScrolling) {
-        userScrolling = true;
-        stopAutoScroll();
-      }
+    // Stop Auto Display on User Interaction
+    fullscreenGallery.addEventListener('click', () => {
+      stopAutoDisplay();
     });
 
     // Initial photo load
