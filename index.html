@@ -3,13 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Photo Sharing App</title>
+  <title>Curio</title>
   <style>
-    /* Styling for the gallery images and delete overlay */
+    /* Global styles */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Welcome section */
+    #welcome {
+      text-align: center;
+      padding: 50px 20px;
+      background: #181818;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: transform 0.3s ease;
+    }
+
+    #welcome.hidden {
+      transform: translateY(-100%);
+    }
+
+    #welcome h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #f1f1f1;
+    }
+
+    #uploadForm {
+      margin-top: 20px;
+    }
+
+    #uploadForm input[type="file"] {
+      display: block;
+      margin: 10px auto;
+    }
+
+    #uploadForm button {
+      padding: 10px 20px;
+      background-color: #f1f1f1;
+      color: #121212;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #uploadForm button:hover {
+      background-color: #e1e1e1;
+    }
+
+    /* Photo gallery */
+    #gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 20px;
+    }
+
     .photo-container {
-      margin: 10px;
-      display: inline-block;
       position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    .photo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-container:hover img {
+      filter: brightness(0.8);
+    }
+
+    .photo-container:hover .delete-overlay {
+      display: flex;
     }
 
     .delete-overlay {
@@ -19,35 +93,43 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
+      background: rgba(0, 0, 0, 0.6);
       justify-content: center;
       align-items: center;
-      text-align: center;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
-      border-radius: 5px;
-    }
-
-    .delete-overlay p {
-      margin: 0;
-      font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <h1>Upload Your Photo</h1>
-  <form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" name="photo" accept="image/*" required>
-    <button type="submit">Upload</button>
-  </form>
+  <!-- Welcome Section -->
+  <div id="welcome">
+    <h1>Welcome to Curio</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="photo" accept="image/*" required>
+      <button type="submit">Upload Photo</button>
+    </form>
+  </div>
 
-  <h2>Photo Gallery</h2>
+  <!-- Photo Gallery -->
   <div id="gallery"></div>
 
   <script>
     const baseURL = window.location.origin; // Automatically use the correct domain
     const gallery = document.getElementById('gallery');
-    let longPressTimeout;
+    const welcomeSection = document.getElementById('welcome');
+    let lastScrollY = window.scrollY;
+
+    // Hide/Show Welcome Section on Scroll
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > lastScrollY) {
+        welcomeSection.classList.add('hidden'); // Hide on scroll down
+      } else {
+        welcomeSection.classList.remove('hidden'); // Show on scroll up
+      }
+      lastScrollY = window.scrollY;
+    });
 
     // Fetch and display photos
     async function loadPhotos() {
@@ -55,25 +137,15 @@
         const response = await fetch(`${baseURL}/photos`);
         const photos = await response.json();
 
-        // Update gallery with images and long-press listeners
+        // Update gallery with images
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
             <img 
               src="${baseURL}${photo}" 
               alt="Photo" 
-              width="200" 
-              style="border: 1px solid #ccc; border-radius: 5px;"
-              data-filename="${photo.replace('/', '')}" 
-              onmousedown="handleLongPressStart(event)" 
-              onmouseup="handleLongPressEnd(event)" 
-              onmouseleave="handleLongPressEnd(event)"
+              data-filename="${photo.replace('/', '')}"
             >
-            <div 
-              class="delete-overlay" 
-              onclick="confirmDeletePhoto('${photo.replace('/', '')}')"
-            >
-              <p>Delete?</p>
-            </div>
+            <div class="delete-overlay" onclick="confirmDeletePhoto('${photo.replace('/', '')}')">Delete?</div>
           </div>
         `).join('');
       } catch (error) {
@@ -82,29 +154,10 @@
       }
     }
 
-    // Load photos when the page loads
-    loadPhotos();
-
-    // Handle long press start
-    function handleLongPressStart(event) {
-      const overlay = event.target.nextElementSibling; // The delete overlay
-      longPressTimeout = setTimeout(() => {
-        overlay.style.display = 'flex'; // Show the delete overlay
-      }, 1000); // 1-second delay for a "long press"
-    }
-
-    // Handle long press end (cancel if not long enough)
-    function handleLongPressEnd(event) {
-      clearTimeout(longPressTimeout);
-    }
-
     // Confirm delete photo
     async function confirmDeletePhoto(filename) {
       if (confirm(`Are you sure you want to delete this photo?`)) {
         await deletePhoto(filename);
-      } else {
-        const overlay = document.querySelector(`div.delete-overlay[data-filename="${filename}"]`);
-        if (overlay) overlay.style.display = 'none'; // Hide overlay
       }
     }
 
@@ -150,6 +203,9 @@
         alert('An error occurred. Please try again.');
       }
     });
+
+    // Load photos on page load
+    loadPhotos();
   </script>
 </body>
 </html>
