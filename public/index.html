@@ -75,7 +75,7 @@
 
     #gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
       height: calc(100vh - 200px);
@@ -133,7 +133,6 @@
     const autoScrollButton = document.getElementById('toggleAutoScroll');
 
     let isAutoScrolling = false;
-    let scrollInterval;
     let direction = 1; // 1 for down, -1 for up
     const SCROLL_SPEED = 2;
 
@@ -153,6 +152,23 @@
       }
     }
 
+    function autoScroll() {
+      const scrollPosition = gallery.scrollTop;
+      const maxScroll = gallery.scrollHeight - gallery.clientHeight;
+
+      if (direction === 1 && scrollPosition >= maxScroll) {
+        direction = -1; // Reverse to scroll up
+      } else if (direction === -1 && scrollPosition <= 0) {
+        direction = 1; // Reverse to scroll down
+      }
+
+      gallery.scrollBy(0, direction * SCROLL_SPEED);
+
+      if (isAutoScrolling) {
+        requestAnimationFrame(autoScroll); // Continuously animate
+      }
+    }
+
     function startAutoScroll() {
       if (isAutoScrolling) return;
 
@@ -161,28 +177,11 @@
       uploadSection.style.pointerEvents = 'none';
       autoScrollButton.textContent = 'Stop Auto Display';
 
-      scrollInterval = setInterval(() => {
-        const scrollPosition = gallery.scrollTop;
-        const maxScroll = gallery.scrollHeight - gallery.clientHeight;
-
-        if (direction === 1 && scrollPosition >= maxScroll) {
-          direction = -1;
-        } else if (direction === -1 && scrollPosition <= 0) {
-          direction = 1;
-        }
-
-        gallery.scrollBy({
-          top: direction * SCROLL_SPEED,
-          behavior: 'auto'
-        });
-      }, 20);
+      requestAnimationFrame(autoScroll); // Start animation
     }
 
     function stopAutoScroll() {
-      if (!isAutoScrolling) return;
-
       isAutoScrolling = false;
-      clearInterval(scrollInterval);
       uploadSection.style.opacity = '1';
       uploadSection.style.pointerEvents = 'auto';
       autoScrollButton.textContent = 'Auto Display';
