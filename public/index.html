@@ -72,6 +72,9 @@
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
+      overflow-y: scroll; /* Enable vertical scrolling */
+      scroll-behavior: smooth; /* Smooth scrolling */
+      height: calc(100vh - 60px); /* Take up the full viewport height minus logo space */
     }
 
     .photo-container {
@@ -84,24 +87,6 @@
       width: 100%;
       height: 150px;
       object-fit: cover;
-    }
-
-    .photo-container:hover .delete-overlay {
-      display: flex;
-    }
-
-    .delete-overlay {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      color: white;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
     }
 
     /* Auto Display Button */
@@ -126,31 +111,6 @@
       background-color: #fff;
       color: #333;
     }
-
-/* Fullscreen Gallery */
-#fullscreenGallery {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: black;
-  z-index: 200;
-  overflow-y: scroll; /* Enable vertical scrolling */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-  scroll-behavior: smooth; /* Smooth scrolling */
-  padding: 0;
-  margin: 0;
-}
-
-#fullscreenGallery img.fullscreen-photo {
-  width: 100%; /* Make photos occupy full width */
-  height: auto; /* Maintain aspect ratio */
-  display: block;
-  margin: 0 auto;
-}
-
   </style>
 </head>
 <body>
@@ -175,28 +135,24 @@
     <button class="rounded-button" id="toggleAutoDisplay">Auto Display</button>
   </div>
 
-  <!-- Fullscreen Gallery -->
-  <div id="fullscreenGallery"></div>
-
   <script>
     const gallery = document.getElementById('gallery');
     const uploadForm = document.getElementById('uploadForm');
     const autoDisplayButton = document.getElementById('toggleAutoDisplay');
-    const fullscreenGallery = document.getElementById('fullscreenGallery');
+    const uploadSection = document.getElementById('uploadSection');
 
     let isAutoScrolling = false;
     let autoScrollInterval = null;
-    let photos = [];
+    let direction = 1; // 1 for down, -1 for up
 
     // Fetch and display photos
     async function loadPhotos() {
       try {
         const response = await fetch('/photos');
-        photos = await response.json();
+        const photos = await response.json();
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
             <img src="${photo}" alt="Photo">
-            <div class="delete-overlay" onclick="deletePhoto('${photo.split('/').pop()}')">Delete</div>
           </div>
         `).join('');
       } catch (err) {
@@ -226,64 +182,42 @@
       }
     });
 
-    // Delete photo
-    async function deletePhoto(filename) {
-      if (!confirm('Are you sure you want to delete this photo?')) return;
+    // Auto Display Functionality
+    function startAutoDisplay() {
+      if (isAutoScrolling) return;
 
-      try {
-        const response = await fetch(`/photos/${filename}`, {
-          method: 'DELETE'
-        });
+      isAutoScrolling = true;
 
-        if (response.ok) {
-          alert('Photo deleted successfully!');
-          loadPhotos();
-        } else {
-          alert('Failed to delete photo.');
+      // Hide upload section and auto display button
+      uploadSection.style.display = 'none';
+      autoDisplayButton.style.display = 'none';
+
+      autoScrollInterval = setInterval(() => {
+        const scrollPosition = gallery.scrollTop;
+        const maxScroll = gallery.scrollHeight - gallery.clientHeight;
+
+        if (direction === 1 && scrollPosition >= maxScroll) {
+          direction = -1; // Switch to scrolling up
+        } else if (direction === -1 && scrollPosition <= 0) {
+          direction = 1; // Switch to scrolling down
         }
-      } catch (err) {
-        console.error('Error deleting photo:', err);
-      }
+
+        gallery.scrollBy(0, direction * 2); // Adjust scrolling speed
+      }, 20); // Adjust interval for smoothness
     }
 
-// Auto Display Functionality
-function startAutoDisplay() {
-  if (isAutoScrolling || photos.length === 0) return;
+    function stopAutoDisplay() {
+      if (!isAutoScrolling) return;
 
-  isAutoScrolling = true;
-  fullscreenGallery.style.display = 'flex'; // Show fullscreen mode
-  fullscreenGallery.innerHTML = photos
-    .map(photo => `<img src="${photo}" alt="Photo" class="fullscreen-photo">`)
-    .join('');
+      clearInterval(autoScrollInterval);
+      isAutoScrolling = false;
 
-  let direction = 1; // 1 for scrolling down, -1 for scrolling up
+      // Show upload section and auto display button again
+      uploadSection.style.display = 'block';
+      autoDisplayButton.style.display = 'block';
 
-  autoScrollInterval = setInterval(() => {
-    const scrollPosition = fullscreenGallery.scrollTop;
-    const maxScroll = fullscreenGallery.scrollHeight - fullscreenGallery.clientHeight;
-
-    if (direction === 1 && scrollPosition >= maxScroll) {
-      direction = -1; // Switch to scrolling up
-    } else if (direction === -1 && scrollPosition <= 0) {
-      direction = 1; // Switch to scrolling down
+      gallery.scrollTop = 0; // Reset scroll position to the top
     }
-
-    fullscreenGallery.scrollBy(0, direction * 2); // Adjust scroll speed here
-  }, 20); // Adjust interval here for smoothness
-}
-
-function stopAutoDisplay() {
-  clearInterval(autoScrollInterval);
-  isAutoScrolling = false;
-  fullscreenGallery.style.display = 'none'; // Exit fullscreen mode
-  fullscreenGallery.scrollTop = 0; // Reset scroll position
-}
-
-// Stop Auto Display on User Interaction
-fullscreenGallery.addEventListener('click', () => {
-  stopAutoDisplay();
-});
-
 
     // Toggle Auto Display on button click
     autoDisplayButton.addEventListener('click', () => {
@@ -295,8 +229,10 @@ fullscreenGallery.addEventListener('click', () => {
     });
 
     // Stop Auto Display on User Interaction
-    fullscreenGallery.addEventListener('click', () => {
-      stopAutoDisplay();
+    gallery.addEventListener('scroll', () => {
+      if (isAutoScrolling) {
+        stopAutoDisplay();
+      }
     });
 
     // Initial photo load
