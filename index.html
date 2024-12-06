@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Sharing App</title>
+</head>
+<body>
+  <h1>Upload Your Photo</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="photo" accept="image/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Photo Gallery</h2>
+  <div id="gallery"></div>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+
+    // Fetch and display photos
+    async function loadPhotos() {
+      try {
+        const response = await fetch('http://localhost:3000/photos');
+        const photos = await response.json();
+
+        // Update gallery with images
+        gallery.innerHTML = photos.map(photo => `
+          <div style="margin: 10px; display: inline-block;">
+            <img src="http://localhost:3000${photo}" alt="Photo" width="200" style="border: 1px solid #ccc; border-radius: 5px;">
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading photos:', error);
+        gallery.innerHTML = '<p>Failed to load photos.</p>';
+      }
+    }
+
+    // Load photos when the page loads
+    loadPhotos();
+
+    // Handle photo uploads
+    const uploadForm = document.getElementById('uploadForm');
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+
+      try {
+        const response = await fetch('http://localhost:3000/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          alert('Photo uploaded successfully!');
+          loadPhotos(); // Refresh the gallery
+        } else {
+          alert('Failed to upload photo.');
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
