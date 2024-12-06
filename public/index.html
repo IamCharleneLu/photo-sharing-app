@@ -128,7 +128,6 @@
     let isAutoScrolling = false;
     let scrollInterval;
     let direction = 1;
-    let lastPhotoTimestamp = 0;
     const SCROLL_SPEED = 2;
 
     async function loadPhotos() {
@@ -146,27 +145,6 @@
       } catch (err) {
         console.error('Error loading photos:', err);
         gallery.innerHTML = '<p>Failed to load photos.</p>';
-      }
-    }
-
-    async function checkNewPhotos() {
-      try {
-        const response = await fetch(`${baseURL}/photos?since=${lastPhotoTimestamp}`);
-        const newPhotos = await response.json();
-        
-        if (newPhotos.length > 0) {
-          lastPhotoTimestamp = newPhotos[newPhotos.length - 1].timestamp;
-          const newElements = newPhotos.map(photo => {
-            const div = document.createElement('div');
-            div.className = 'photo-container';
-            div.innerHTML = `<img src="${baseURL}${photo}" alt="Photo" loading="lazy">`;
-            return div;
-          });
-          
-          newElements.forEach(element => gallery.appendChild(element));
-        }
-      } catch (err) {
-        console.error('Error checking for new photos:', err);
       }
     }
 
@@ -248,7 +226,6 @@
 
     // Initial setup
     loadPhotos();
-    setInterval(checkNewPhotos, 30000); // Check for new photos every 30 seconds
   </script>
 </body>
 </html>
