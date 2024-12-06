@@ -14,28 +14,29 @@
       overflow-x: hidden;
     }
 
-    /* Welcome section */
-    #welcome {
+    /* Curio title */
+    #curioTitle {
       text-align: center;
-      padding: 50px 20px;
+      padding: 20px 0;
       background: #333; /* Same dark grey as body */
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fff;
       position: sticky;
       top: 0;
       z-index: 10;
+    }
+
+    /* Upload section */
+    #uploadSection {
+      text-align: center;
+      padding: 20px 0;
+      background: #333; /* Same dark grey as body */
+      position: sticky;
+      top: 50px; /* Below the title */
+      z-index: 9;
+      display: none; /* Hidden by default */
       transition: transform 0.3s ease;
-    }
-
-    #welcome.hidden {
-      transform: translateY(-100%);
-    }
-
-    #welcome h1 {
-      margin: 0;
-      font-size: 2rem;
-    }
-
-    #uploadForm {
-      margin-top: 20px;
     }
 
     #uploadForm input[type="file"] {
@@ -70,8 +71,6 @@
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
-      max-height: 70vh; /* Limit height */
-      overflow-y: auto; /* Allow vertical scrolling */
       background: #333; /* Same dark grey as body */
       color: #fff; /* White text */
     }
@@ -92,38 +91,53 @@
     .photo-container:hover img {
       filter: brightness(0.8);
     }
+
+    /* Auto display button */
+    #autoDisplay {
+      margin: 20px auto;
+      text-align: center;
+      padding: 20px 0;
+    }
   </style>
 </head>
 <body>
-  <!-- Welcome Section -->
-  <div id="welcome">
-    <h1>Welcome to Curio</h1>
+  <!-- Curio Title -->
+  <div id="curioTitle">Curio</div>
+
+  <!-- Upload Section -->
+  <div id="uploadSection">
     <form id="uploadForm" enctype="multipart/form-data">
       <input type="file" name="photo" accept="image/*" required>
       <button class="rounded-button" type="submit">Upload Photo</button>
     </form>
-    <button class="rounded-button" id="toggleAutoScroll">Auto Display</button>
   </div>
 
   <!-- Photo Gallery -->
   <div id="gallery"></div>
 
+  <!-- Auto Display Button -->
+  <div id="autoDisplay">
+    <button class="rounded-button" id="toggleAutoScroll">Auto Display</button>
+  </div>
+
   <script>
     const baseURL = window.location.origin; // Automatically use the correct domain
     const gallery = document.getElementById('gallery');
-    const welcomeSection = document.getElementById('welcome');
+    const uploadSection = document.getElementById('uploadSection');
     const autoScrollButton = document.getElementById('toggleAutoScroll');
     let lastScrollY = window.scrollY;
     let autoScrollInterval = null;
     let isAutoScrolling = false;
     let userScrolling = false;
 
-    // Hide/Show Welcome Section on Scroll
+    // Show/Hide Upload Section on Scroll
     window.addEventListener('scroll', () => {
-      if (window.scrollY > lastScrollY) {
-        welcomeSection.classList.add('hidden'); // Hide on scroll down
-      } else {
-        welcomeSection.classList.remove('hidden'); // Show on scroll up
+      if (window.scrollY < lastScrollY) {
+        // Show upload section when scrolling up
+        uploadSection.style.display = 'block';
+      } else if (window.scrollY > 100) {
+        // Hide upload section when scrolling down
+        uploadSection.style.display = 'none';
       }
       lastScrollY = window.scrollY;
 
