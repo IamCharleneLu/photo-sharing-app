@@ -57,28 +57,27 @@ app.get('/photos', (req, res) => {
 
 // Route to delete a specific photo
 app.delete('/photos/:filename', (req, res) => {
-  const filename = req.params.filename; // Get the filename from the URL
-  const filePath = path.join(UPLOAD_DIR, filename); // Full path to the file
+  const filename = req.params.filename; // Extract filename from URL
+  const filePath = path.join(UPLOAD_DIR, filename); // Build full path
 
-  // Check if the file exists
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.error(`File not found: ${filename}`);
+      console.error(`File not found: ${filePath}`, err);
       return res.status(404).json({ error: 'File not found' });
     }
 
-    // Delete the file
     fs.unlink(filePath, (err) => {
       if (err) {
-        console.error(`Error deleting file: ${filename}`, err);
+        console.error(`Error deleting file: ${filePath}`, err);
         return res.status(500).json({ error: 'Failed to delete file' });
       }
 
-      console.log(`File deleted: ${filename}`);
+      console.log(`File deleted: ${filePath}`);
       res.status(200).json({ message: 'File deleted successfully' });
     });
   });
 });
+
 
 // Start the server
 app.listen(PORT, () => {
