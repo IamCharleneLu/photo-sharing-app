@@ -5,51 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Curio</title>
   <style>
-    /* Global styles */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      color: #333;
+      background-color: #333;
+      color: #fff;
       overflow-x: hidden;
     }
 
-    /* Welcome section */
-    #welcome {
+    #curioTitle {
       text-align: center;
-      padding: 50px 20px;
-      background: #fff;
+      padding: 20px 0;
+      background: #333;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fff;
       position: sticky;
       top: 0;
       z-index: 10;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
     }
 
-    #welcome.hidden {
-      transform: translateY(-100%);
-    }
-
-    #welcome h1 {
-      margin: 0;
-      font-size: 2rem;
-      color: #333;
-    }
-
-    #uploadForm {
-      margin-top: 20px;
+    #uploadSection {
+      text-align: center;
+      padding: 20px 0;
+      background: #333;
+      position: sticky;
+      top: 50px;
+      z-index: 9;
+      transition: opacity 0.3s ease;
     }
 
     #uploadForm input[type="file"] {
       display: block;
       margin: 10px auto;
+      color: white;
+      background: transparent;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
     }
 
     .rounded-button {
       padding: 10px 20px;
-      border: 2px solid #333;
+      border: 2px solid #fff;
       background-color: transparent;
-      color: #333;
+      color: #fff;
       border-radius: 30px;
       font-size: 16px;
       font-weight: bold;
@@ -58,33 +58,29 @@
     }
 
     .rounded-button:hover {
-      background-color: #333;
-      color: #fff;
+      background-color: #fff;
+      color: #333;
     }
 
     .rounded-button:active {
       transform: scale(0.95);
     }
 
-    /* Photo gallery */
     #gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
-      max-height: 70vh; /* Set height for scrolling */
-      overflow-y: auto; /* Allow vertical scrolling */
+      height: calc(100vh - 200px);
+      overflow-y: auto;
       scroll-behavior: smooth;
-      background: #fff;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .photo-container {
       position: relative;
       overflow: hidden;
       border-radius: 10px;
-      background-color: #fff;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      aspect-ratio: 1;
     }
 
     .photo-container img {
@@ -92,112 +88,128 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      transition: filter 0.3s ease;
     }
 
     .photo-container:hover img {
       filter: brightness(0.8);
     }
 
-    .photo-container:hover .delete-overlay {
-      display: flex;
-    }
-
-    .delete-overlay {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 10px;
+    #autoDisplay {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
-  <!-- Welcome Section -->
-  <div id="welcome">
-    <h1>Welcome to Curio</h1>
+  <div id="curioTitle">Curio</div>
+
+  <div id="uploadSection">
     <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" name="photo" accept="image/*" required>
+      <input type="file" name="photo" accept="image/*" multiple required>
       <button class="rounded-button" type="submit">Upload Photo</button>
     </form>
   </div>
 
-  <!-- Photo Gallery -->
   <div id="gallery"></div>
 
+  <div id="autoDisplay">
+    <button class="rounded-button" id="toggleAutoScroll">Auto Display</button>
+  </div>
+
   <script>
-    const baseURL = window.location.origin; // Automatically use the correct domain
+    const baseURL = window.location.origin;
     const gallery = document.getElementById('gallery');
-    const welcomeSection = document.getElementById('welcome');
-    let lastScrollY = window.scrollY;
+    const uploadSection = document.getElementById('uploadSection');
+    const autoScrollButton = document.getElementById('toggleAutoScroll');
+    
+    let isAutoScrolling = false;
+    let scrollInterval;
+    let direction = 1;
+    let lastPhotoTimestamp = 0;
+    const SCROLL_SPEED = 2;
 
-    // Hide/Show Welcome Section on Scroll
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > lastScrollY) {
-        welcomeSection.classList.add('hidden'); // Hide on scroll down
-      } else {
-        welcomeSection.classList.remove('hidden'); // Show on scroll up
-      }
-      lastScrollY = window.scrollY;
-    });
-
-    // Fetch and display photos
     async function loadPhotos() {
       try {
         const response = await fetch(`${baseURL}/photos`);
         const photos = await response.json();
+        
+        if (photos.length === 0) return;
 
-        // Update gallery with images
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
-            <img 
-              src="${baseURL}${photo}" 
-              alt="Photo" 
-              data-filename="${photo.replace('/', '')}"
-            >
-            <div class="delete-overlay" onclick="confirmDeletePhoto('${photo.replace('/', '')}')">Delete?</div>
+            <img src="${baseURL}${photo}" alt="Photo" loading="lazy">
           </div>
         `).join('');
-      } catch (error) {
-        console.error('Error loading photos:', error);
+      } catch (err) {
+        console.error('Error loading photos:', err);
         gallery.innerHTML = '<p>Failed to load photos.</p>';
       }
     }
 
-    // Confirm delete photo
-    async function confirmDeletePhoto(filename) {
-      if (confirm(`Are you sure you want to delete this photo?`)) {
-        await deletePhoto(filename);
-      }
-    }
-
-    // Delete photo from backend
-    async function deletePhoto(filename) {
+    async function checkNewPhotos() {
       try {
-        const response = await fetch(`${baseURL}/photos/${filename}`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          alert('Photo deleted successfully!');
-          loadPhotos(); // Refresh the gallery
-        } else {
-          alert('Failed to delete photo.');
+        const response = await fetch(`${baseURL}/photos?since=${lastPhotoTimestamp}`);
+        const newPhotos = await response.json();
+        
+        if (newPhotos.length > 0) {
+          lastPhotoTimestamp = newPhotos[newPhotos.length - 1].timestamp;
+          const newElements = newPhotos.map(photo => {
+            const div = document.createElement('div');
+            div.className = 'photo-container';
+            div.innerHTML = `<img src="${baseURL}${photo}" alt="Photo" loading="lazy">`;
+            return div;
+          });
+          
+          newElements.forEach(element => gallery.appendChild(element));
         }
-      } catch (error) {
-        console.error('Error deleting photo:', error);
-        alert('An error occurred. Please try again.');
+      } catch (err) {
+        console.error('Error checking for new photos:', err);
       }
     }
 
-    // Handle photo uploads
+    function startAutoScroll() {
+      if (isAutoScrolling) return;
+
+      isAutoScrolling = true;
+      uploadSection.style.opacity = '0';
+      uploadSection.style.pointerEvents = 'none';
+      autoScrollButton.textContent = 'Stop Auto Display';
+
+      scrollInterval = setInterval(() => {
+        const scrollPosition = gallery.scrollTop;
+        const maxScroll = gallery.scrollHeight - gallery.clientHeight;
+
+        if (direction === 1 && scrollPosition >= maxScroll) {
+          direction = -1;
+        } else if (direction === -1 && scrollPosition <= 0) {
+          direction = 1;
+        }
+
+        gallery.scrollBy({
+          top: direction * SCROLL_SPEED,
+          behavior: 'auto'
+        });
+      }, 20);
+    }
+
+    function stopAutoScroll() {
+      if (!isAutoScrolling) return;
+
+      isAutoScrolling = false;
+      clearInterval(scrollInterval);
+      uploadSection.style.opacity = '1';
+      uploadSection.style.pointerEvents = 'auto';
+      autoScrollButton.textContent = 'Auto Display';
+      
+      gallery.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
     const uploadForm = document.getElementById('uploadForm');
     uploadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -206,34 +218,37 @@
       try {
         const response = await fetch(`${baseURL}/upload`, {
           method: 'POST',
-          body: formData,
+          body: formData
         });
 
         if (response.ok) {
-          alert('Photo uploaded successfully!');
-          loadPhotos(); // Refresh the gallery
+          await loadPhotos();
+          alert('Photos uploaded successfully!');
         } else {
-          alert('Failed to upload photo.');
+          alert('Failed to upload photos.');
         }
-      } catch (error) {
-        console.error('Error uploading photo:', error);
-        alert('An error occurred. Please try again.');
+      } catch (err) {
+        console.error('Error uploading photos:', err);
+        alert('Error uploading photos.');
       }
     });
 
-    // Automatic scrolling logic
-    let scrollDirection = 1; // 1 for down, -1 for up
-    setInterval(() => {
-      if (scrollDirection === 1 && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
-        scrollDirection = -1; // Switch to scrolling up
-      } else if (scrollDirection === -1 && gallery.scrollTop <= 0) {
-        scrollDirection = 1; // Switch to scrolling down
+    autoScrollButton.addEventListener('click', () => {
+      if (isAutoScrolling) {
+        stopAutoScroll();
+      } else {
+        startAutoScroll();
       }
-      gallery.scrollBy(0, 2 * scrollDirection); // Adjust the speed (2px per interval)
-    }, 30); // Adjust the interval speed (30ms)
+    });
 
-    // Load photos on page load
+    // Stop auto-scroll on user interaction
+    gallery.addEventListener('wheel', stopAutoScroll);
+    gallery.addEventListener('touchstart', stopAutoScroll);
+    gallery.addEventListener('mousedown', stopAutoScroll);
+
+    // Initial setup
     loadPhotos();
+    setInterval(checkNewPhotos, 30000); // Check for new photos every 30 seconds
   </script>
 </body>
 </html>
