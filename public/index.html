@@ -127,25 +127,30 @@
       color: #333;
     }
 
-    /* Fullscreen Gallery */
-    #fullscreenGallery {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: black;
-      z-index: 200;
-      overflow: hidden;
-      justify-content: center;
-      align-items: center;
-    }
+/* Fullscreen Gallery */
+#fullscreenGallery {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 200;
+  overflow-y: scroll; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  scroll-behavior: smooth; /* Smooth scrolling */
+  padding: 0;
+  margin: 0;
+}
 
-    #fullscreenGallery img {
-      max-width: 90%;
-      max-height: 90%;
-    }
+#fullscreenGallery img.fullscreen-photo {
+  width: 100%; /* Make photos occupy full width */
+  height: auto; /* Maintain aspect ratio */
+  display: block;
+  margin: 0 auto;
+}
+
   </style>
 </head>
 <body>
@@ -241,35 +246,44 @@
       }
     }
 
-    // Auto Display Functionality
-    function startAutoDisplay() {
-      if (isAutoScrolling || photos.length === 0) return;
+// Auto Display Functionality
+function startAutoDisplay() {
+  if (isAutoScrolling || photos.length === 0) return;
 
-      isAutoScrolling = true;
-      fullscreenGallery.style.display = 'flex';
-      fullscreenGallery.innerHTML = `<img src="${photos[0]}" alt="Photo">`;
+  isAutoScrolling = true;
+  fullscreenGallery.style.display = 'flex'; // Show fullscreen mode
+  fullscreenGallery.innerHTML = photos
+    .map(photo => `<img src="${photo}" alt="Photo" class="fullscreen-photo">`)
+    .join('');
 
-      let index = 0;
-      let direction = 1;
+  let direction = 1; // 1 for scrolling down, -1 for scrolling up
 
-      autoScrollInterval = setInterval(() => {
-        index += direction;
-        if (index >= photos.length) {
-          index = photos.length - 2;
-          direction = -1; // Reverse direction
-        } else if (index < 0) {
-          index = 1;
-          direction = 1; // Forward direction
-        }
-        fullscreenGallery.innerHTML = `<img src="${photos[index]}" alt="Photo">`;
-      }, 2000);
+  autoScrollInterval = setInterval(() => {
+    const scrollPosition = fullscreenGallery.scrollTop;
+    const maxScroll = fullscreenGallery.scrollHeight - fullscreenGallery.clientHeight;
+
+    if (direction === 1 && scrollPosition >= maxScroll) {
+      direction = -1; // Switch to scrolling up
+    } else if (direction === -1 && scrollPosition <= 0) {
+      direction = 1; // Switch to scrolling down
     }
 
-    function stopAutoDisplay() {
-      clearInterval(autoScrollInterval);
-      isAutoScrolling = false;
-      fullscreenGallery.style.display = 'none';
-    }
+    fullscreenGallery.scrollBy(0, direction * 2); // Adjust scroll speed here
+  }, 20); // Adjust interval here for smoothness
+}
+
+function stopAutoDisplay() {
+  clearInterval(autoScrollInterval);
+  isAutoScrolling = false;
+  fullscreenGallery.style.display = 'none'; // Exit fullscreen mode
+  fullscreenGallery.scrollTop = 0; // Reset scroll position
+}
+
+// Stop Auto Display on User Interaction
+fullscreenGallery.addEventListener('click', () => {
+  stopAutoDisplay();
+});
+
 
     // Toggle Auto Display on button click
     autoDisplayButton.addEventListener('click', () => {
