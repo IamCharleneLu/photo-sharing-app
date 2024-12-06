@@ -16,18 +16,19 @@
   <div id="gallery"></div>
 
   <script>
+    const baseURL = window.location.origin; // Automatically use the correct domain
     const gallery = document.getElementById('gallery');
 
     // Fetch and display photos
     async function loadPhotos() {
       try {
-        const response = await fetch('http://localhost:3000/photos');
+        const response = await fetch(`${baseURL}/photos`);
         const photos = await response.json();
 
         // Update gallery with images
         gallery.innerHTML = photos.map(photo => `
           <div style="margin: 10px; display: inline-block;">
-            <img src="http://localhost:3000${photo}" alt="Photo" width="200" style="border: 1px solid #ccc; border-radius: 5px;">
+            <img src="${baseURL}${photo}" alt="Photo" width="200" style="border: 1px solid #ccc; border-radius: 5px;">
           </div>
         `).join('');
       } catch (error) {
@@ -46,7 +47,7 @@
       const formData = new FormData(uploadForm);
 
       try {
-        const response = await fetch('http://localhost:3000/upload', {
+        const response = await fetch(`${baseURL}/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -65,3 +66,4 @@
   </script>
 </body>
 </html>
+
