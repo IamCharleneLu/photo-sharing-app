@@ -1,81 +1,155 @@
-const gallery = document.getElementById('gallery');
-let longPressTimeout;
-
-// Fetch and display photos
-async function loadPhotos() {
-  try {
-    const response = await fetch(`${window.location.origin}/photos`);
-    const photos = await response.json();
-
-    // Update gallery with images and add long-press listeners
-    gallery.innerHTML = photos.map(photo => `
-      <div style="margin: 10px; display: inline-block; position: relative;">
-        <img 
-          src="${window.location.origin}${photo}" 
-          alt="Photo" 
-          width="200" 
-          style="border: 1px solid #ccc; border-radius: 5px;"
-          data-filename="${photo.replace('/', '')}" 
-          onmousedown="handleLongPressStart(event)" 
-          onmouseup="handleLongPressEnd(event)" 
-          onmouseleave="handleLongPressEnd(event)"
-        >
-        <div 
-          class="delete-overlay" 
-          style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); color: white; justify-content: center; align-items: center; text-align: center; cursor: pointer;"
-          onclick="confirmDeletePhoto('${photo.replace('/', '')}')"
-        >
-          <p>Delete?</p>
-        </div>
-      </div>
-    `).join('');
-  } catch (error) {
-    console.error('Error loading photos:', error);
-    gallery.innerHTML = '<p>Failed to load photos.</p>';
-  }
-}
-
-// Handle long press start
-function handleLongPressStart(event) {
-  const overlay = event.target.nextElementSibling; // The overlay div
-  longPressTimeout = setTimeout(() => {
-    overlay.style.display = 'flex'; // Show the delete overlay
-  }, 1000); // 1-second delay for a "long press"
-}
-
-// Handle long press end (cancel if not long enough)
-function handleLongPressEnd(event) {
-  clearTimeout(longPressTimeout);
-}
-
-// Confirm delete photo
-async function confirmDeletePhoto(filename) {
-  if (confirm(`Are you sure you want to delete this photo?`)) {
-    await deletePhoto(filename);
-  } else {
-    const overlay = document.querySelector(`div.delete-overlay[data-filename="${filename}"]`);
-    if (overlay) overlay.style.display = 'none'; // Hide overlay
-  }
-}
-
-// Delete photo from backend
-async function deletePhoto(filename) {
-  try {
-    const response = await fetch(`${window.location.origin}/photos/${filename}`, {
-      method: 'DELETE',
-    });
-
-    if (response.ok) {
-      alert('Photo deleted successfully!');
-      loadPhotos(); // Refresh the gallery
-    } else {
-      alert('Failed to delete photo.');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Sharing App</title>
+  <style>
+    /* Styling for the gallery images and delete overlay */
+    .photo-container {
+      margin: 10px;
+      display: inline-block;
+      position: relative;
     }
-  } catch (error) {
-    console.error('Error deleting photo:', error);
-    alert('An error occurred. Please try again.');
-  }
-}
 
-// Load photos on page load
-loadPhotos();
+    .delete-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .delete-overlay p {
+      margin: 0;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Your Photo</h1>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="photo" accept="image/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Photo Gallery</h2>
+  <div id="gallery"></div>
+
+  <script>
+    const baseURL = window.location.origin; // Automatically use the correct domain
+    const gallery = document.getElementById('gallery');
+    let longPressTimeout;
+
+    // Fetch and display photos
+    async function loadPhotos() {
+      try {
+        const response = await fetch(`${baseURL}/photos`);
+        const photos = await response.json();
+
+        // Update gallery with images and long-press listeners
+        gallery.innerHTML = photos.map(photo => `
+          <div class="photo-container">
+            <img 
+              src="${baseURL}${photo}" 
+              alt="Photo" 
+              width="200" 
+              style="border: 1px solid #ccc; border-radius: 5px;"
+              data-filename="${photo.replace('/', '')}" 
+              onmousedown="handleLongPressStart(event)" 
+              onmouseup="handleLongPressEnd(event)" 
+              onmouseleave="handleLongPressEnd(event)"
+            >
+            <div 
+              class="delete-overlay" 
+              onclick="confirmDeletePhoto('${photo.replace('/', '')}')"
+            >
+              <p>Delete?</p>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading photos:', error);
+        gallery.innerHTML = '<p>Failed to load photos.</p>';
+      }
+    }
+
+    // Load photos when the page loads
+    loadPhotos();
+
+    // Handle long press start
+    function handleLongPressStart(event) {
+      const overlay = event.target.nextElementSibling; // The delete overlay
+      longPressTimeout = setTimeout(() => {
+        overlay.style.display = 'flex'; // Show the delete overlay
+      }, 1000); // 1-second delay for a "long press"
+    }
+
+    // Handle long press end (cancel if not long enough)
+    function handleLongPressEnd(event) {
+      clearTimeout(longPressTimeout);
+    }
+
+    // Confirm delete photo
+    async function confirmDeletePhoto(filename) {
+      if (confirm(`Are you sure you want to delete this photo?`)) {
+        await deletePhoto(filename);
+      } else {
+        const overlay = document.querySelector(`div.delete-overlay[data-filename="${filename}"]`);
+        if (overlay) overlay.style.display = 'none'; // Hide overlay
+      }
+    }
+
+    // Delete photo from backend
+    async function deletePhoto(filename) {
+      try {
+        const response = await fetch(`${baseURL}/photos/${filename}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          alert('Photo deleted successfully!');
+          loadPhotos(); // Refresh the gallery
+        } else {
+          alert('Failed to delete photo.');
+        }
+      } catch (error) {
+        console.error('Error deleting photo:', error);
+        alert('An error occurred. Please try again.');
+      }
+    }
+
+    // Handle photo uploads
+    const uploadForm = document.getElementById('uploadForm');
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
+
+      try {
+        const response = await fetch(`${baseURL}/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          alert('Photo uploaded successfully!');
+          loadPhotos(); // Refresh the gallery
+        } else {
+          alert('Failed to upload photo.');
+        }
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        alert('An error occurred. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
