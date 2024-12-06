@@ -74,7 +74,7 @@
       padding: 20px;
       overflow-y: scroll; /* Enable vertical scrolling */
       scroll-behavior: smooth; /* Smooth scrolling */
-      height: calc(100vh - 60px); /* Take up the full viewport height minus logo space */
+      height: calc(100vh - 60px); /* Full viewport height minus logo */
     }
 
     .photo-container {
@@ -143,7 +143,7 @@
 
     let isAutoScrolling = false;
     let autoScrollInterval = null;
-    let direction = 1; // 1 for down, -1 for up
+    let direction = 1; // 1 for scrolling down, -1 for scrolling up
 
     // Fetch and display photos
     async function loadPhotos() {
