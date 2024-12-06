@@ -6,7 +6,7 @@ const fs = require('fs');
 
 // Initialize the app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // Use the environment PORT or default to 3000
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
