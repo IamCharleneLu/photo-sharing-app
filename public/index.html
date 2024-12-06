@@ -35,14 +35,21 @@
       transition: opacity 0.3s ease;
     }
 
+    #uploadForm {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
     #uploadForm input[type="file"] {
-      display: block;
-      margin: 10px auto;
       color: white;
-      background: transparent;
+      background: black;
       border: none;
       padding: 10px;
+      border-radius: 5px;
       cursor: pointer;
+      font-size: 16px;
     }
 
     .rounded-button {
@@ -68,7 +75,7 @@
 
     #gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 10px;
       padding: 20px;
       height: calc(100vh - 200px);
@@ -80,12 +87,12 @@
       position: relative;
       overflow: hidden;
       border-radius: 10px;
-      aspect-ratio: 1;
     }
 
     .photo-container img {
       width: 100%;
-      height: 100%;
+      height: auto;
+      max-height: 200px;
       object-fit: cover;
       display: block;
       transition: filter 0.3s ease;
@@ -124,18 +131,16 @@
     const gallery = document.getElementById('gallery');
     const uploadSection = document.getElementById('uploadSection');
     const autoScrollButton = document.getElementById('toggleAutoScroll');
-    
+
     let isAutoScrolling = false;
     let scrollInterval;
-    let direction = 1;
+    let direction = 1; // 1 for down, -1 for up
     const SCROLL_SPEED = 2;
 
     async function loadPhotos() {
       try {
         const response = await fetch(`${baseURL}/photos`);
         const photos = await response.json();
-        
-        if (photos.length === 0) return;
 
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
@@ -181,7 +186,7 @@
       uploadSection.style.opacity = '1';
       uploadSection.style.pointerEvents = 'auto';
       autoScrollButton.textContent = 'Auto Display';
-      
+
       gallery.scrollTo({
         top: 0,
         behavior: 'smooth'
