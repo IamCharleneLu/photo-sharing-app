@@ -9,8 +9,8 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      color: #333;
+      background-color: #333; /* Dark grey background */
+      color: #fff; /* White text color for dark background */
       overflow-x: hidden;
     }
 
@@ -18,7 +18,8 @@
     #welcome {
       text-align: center;
       padding: 50px 20px;
-      background: #fff;
+      background: #f7f7f7; /* Light grey background */
+      color: #333; /* Dark text for contrast */
       position: sticky;
       top: 0;
       z-index: 10;
@@ -33,7 +34,7 @@
     #welcome h1 {
       margin: 0;
       font-size: 2rem;
-      color: #333;
+      color: #333; /* Dark text */
     }
 
     #uploadForm {
@@ -45,12 +46,11 @@
       margin: 10px auto;
     }
 
-    /* Rounded button styles */
     .rounded-button {
       padding: 10px 20px;
-      border: 2px solid #333;
+      border: 2px solid #333; /* Dark grey border */
       background-color: transparent;
-      color: #333;
+      color: #333; /* Dark grey text */
       border-radius: 30px;
       font-size: 16px;
       font-weight: bold;
@@ -59,8 +59,8 @@
     }
 
     .rounded-button:hover {
-      background-color: #333;
-      color: #fff;
+      background-color: #333; /* Dark grey background on hover */
+      color: #fff; /* White text on hover */
     }
 
     .rounded-button:active {
@@ -73,14 +73,19 @@
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
+      max-height: 70vh; /* Set height for scrolling */
+      overflow-y: auto; /* Allow vertical scrolling */
+      background: #f7f7f7; /* Light grey background */
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
     }
 
     .photo-container {
       position: relative;
       overflow: hidden;
       border-radius: 10px;
-      background-color: #fff;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      background-color: #fff; /* White background for photo containers */
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     .photo-container img {
@@ -216,6 +221,17 @@
         alert('An error occurred. Please try again.');
       }
     });
+
+    // Automatic scrolling logic
+    let scrollDirection = 1; // 1 for down, -1 for up
+    setInterval(() => {
+      if (scrollDirection === 1 && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
+        scrollDirection = -1; // Switch to scrolling up
+      } else if (scrollDirection === -1 && gallery.scrollTop <= 0) {
+        scrollDirection = 1; // Switch to scrolling down
+      }
+      gallery.scrollBy(0, 2 * scrollDirection); // Adjust the speed (2px per interval)
+    }, 30); // Adjust the interval speed (30ms)
 
     // Load photos on page load
     loadPhotos();
