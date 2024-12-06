@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Curio</title>
   <style>
-    /* Global styles */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f7f7f7;
       color: #333;
-      overflow-x: hidden;
     }
 
-    /* Welcome section */
     #welcome {
       text-align: center;
       padding: 50px 20px;
@@ -45,7 +42,6 @@
       margin: 10px auto;
     }
 
-    /* Rounded button styles */
     .rounded-button {
       padding: 10px 20px;
       border: 2px solid #333;
@@ -67,7 +63,6 @@
       transform: scale(0.95);
     }
 
-    /* Photo gallery */
     #gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -116,7 +111,6 @@
   </style>
 </head>
 <body>
-  <!-- Welcome Section -->
   <div id="welcome">
     <h1>Welcome to Curio</h1>
     <form id="uploadForm" enctype="multipart/form-data">
@@ -125,40 +119,43 @@
     </form>
   </div>
 
-  <!-- Photo Gallery -->
   <div id="gallery"></div>
 
   <script>
-    const baseURL = window.location.origin; // Automatically use the correct domain
+    const baseURL = window.location.origin;
     const gallery = document.getElementById('gallery');
     const welcomeSection = document.getElementById('welcome');
     let lastScrollY = window.scrollY;
 
-    // Hide/Show Welcome Section on Scroll
+    // Hide/Show welcome section on scroll
     window.addEventListener('scroll', () => {
       if (window.scrollY > lastScrollY) {
-        welcomeSection.classList.add('hidden'); // Hide on scroll down
+        welcomeSection.classList.add('hidden');
       } else {
-        welcomeSection.classList.remove('hidden'); // Show on scroll up
+        welcomeSection.classList.remove('hidden');
       }
       lastScrollY = window.scrollY;
     });
 
-    // Fetch and display photos
+    // Load and display photos in the gallery
     async function loadPhotos() {
       try {
         const response = await fetch(`${baseURL}/photos`);
+        if (!response.ok) throw new Error('Failed to fetch photos.');
         const photos = await response.json();
 
-        // Update gallery with images
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
             <img 
               src="${baseURL}${photo}" 
-              alt="Photo" 
-              data-filename="${photo.replace('/', '')}"
+              alt="Photo"
+              data-filename="${photo.split('/').pop()}"
             >
-            <div class="delete-overlay" onclick="confirmDeletePhoto('${photo.replace('/', '')}')">Delete?</div>
+            <div 
+              class="delete-overlay" 
+              onclick="confirmDeletePhoto('${photo.split('/').pop()}')">
+              Delete?
+            </div>
           </div>
         `).join('');
       } catch (error) {
@@ -167,57 +164,49 @@
       }
     }
 
-    // Confirm delete photo
+    // Confirm and delete photo
     async function confirmDeletePhoto(filename) {
-      if (confirm(`Are you sure you want to delete this photo?`)) {
+      if (confirm('Are you sure you want to delete this photo?')) {
         await deletePhoto(filename);
       }
     }
 
-    // Delete photo from backend
+    // Send request to delete photo
     async function deletePhoto(filename) {
       try {
-        const response = await fetch(`${baseURL}/photos/${filename}`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          alert('Photo deleted successfully!');
-          loadPhotos(); // Refresh the gallery
-        } else {
-          alert('Failed to delete photo.');
+        const response = await fetch(`${baseURL}/photos/${filename}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Unknown error occurred.');
         }
+        alert('Photo deleted successfully!');
+        loadPhotos();
       } catch (error) {
         console.error('Error deleting photo:', error);
-        alert('An error occurred. Please try again.');
+        alert(`Error: ${error.message}`);
       }
     }
 
-    // Handle photo uploads
-    const uploadForm = document.getElementById('uploadForm');
-    uploadForm.addEventListener('submit', async (e) => {
+    // Handle photo upload
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(uploadForm);
+      const formData = new FormData(e.target);
 
       try {
         const response = await fetch(`${baseURL}/upload`, {
           method: 'POST',
           body: formData,
         });
-
-        if (response.ok) {
-          alert('Photo uploaded successfully!');
-          loadPhotos(); // Refresh the gallery
-        } else {
-          alert('Failed to upload photo.');
-        }
+        if (!response.ok) throw new Error('Failed to upload photo.');
+        alert('Photo uploaded successfully!');
+        loadPhotos();
       } catch (error) {
         console.error('Error uploading photo:', error);
         alert('An error occurred. Please try again.');
       }
     });
 
-    // Load photos on page load
+    // Initial load of photos
     loadPhotos();
   </script>
 </body>
