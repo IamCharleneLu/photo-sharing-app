@@ -5,124 +5,89 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Curio</title>
   <style>
-    /* Global styles */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #333; /* Dark grey background */
-      color: #fff; /* White text color */
+      color: white;
       overflow-x: hidden;
     }
 
-    /* Curio title/logo section */
-    #curioTitle {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px 0;
-      background: #333; /* Same dark grey as body */
+    /* Logo Section */
+    #logo {
+      text-align: center;
+      padding: 20px;
+      background: #222;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
     }
 
-    #curioLogo {
-      height: 50px; /* Set logo height */
+    #logo img {
+      height: 50px;
     }
 
-    /* Upload section */
+    /* Upload Section */
     #uploadSection {
       text-align: center;
-      padding: 20px 10px;
-      background: #333; /* Same dark grey as body */
+      padding: 20px;
+      background: #333;
       position: sticky;
-      top: 70px; /* Below the title */
-      z-index: 9;
-      display: block; /* Visible by default for testing */
-      transition: transform 0.3s ease;
+      top: 60px;
+      z-index: 99;
     }
 
     #uploadForm {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      justify-content: center;
       gap: 10px;
     }
 
-    #uploadForm span {
-      font-size: 14px;
-      color: #fff; /* White text */
-    }
-
-    #uploadForm input[type="file"] {
-      display: inline-block;
-      color: #fff; /* White text */
-      background-color: #000; /* Black background */
-      padding: 10px;
+    input[type="file"] {
+      color: white;
+      background: black;
       border: none;
+      padding: 10px;
       border-radius: 5px;
-      font-size: 14px;
       cursor: pointer;
     }
 
-    #uploadForm input[type="file"]::-webkit-file-upload-button {
-      background: #000; /* Black background */
-      color: #fff; /* White text */
-      border: none;
-      border-radius: 5px;
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .upload-button {
+    button {
       padding: 10px 20px;
-      background-color: #333; /* Same grey as background */
-      color: #fff; /* White text */
       border: none;
       border-radius: 5px;
-      font-size: 14px;
+      background: white;
+      color: black;
       font-weight: bold;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
 
-    .upload-button:hover {
-      background-color: #444; /* Slightly lighter grey */
+    button:hover {
+      background: lightgrey;
     }
 
-    .upload-button:active {
-      transform: scale(0.95);
-    }
-
-    /* Photo gallery */
+    /* Photo Gallery */
     #gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       padding: 20px;
-      background: #333; /* Same dark grey as body */
-      color: #fff; /* White text */
     }
 
     .photo-container {
       position: relative;
       overflow: hidden;
-      border-radius: 10px;
+      border-radius: 5px;
     }
 
     .photo-container img {
       width: 100%;
-      height: 100%;
+      height: 150px;
       object-fit: cover;
-      display: block;
     }
 
-    .photo-container:hover img {
-      filter: brightness(0.8);
-    }
-
-    .photo-container:active .delete-overlay {
-      display: flex; /* Show delete overlay on long-press */
+    .photo-container:hover .delete-overlay {
+      display: flex;
     }
 
     .delete-overlay {
@@ -133,126 +98,79 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.6);
+      color: white;
       justify-content: center;
       align-items: center;
-      color: white;
-      font-size: 16px;
       cursor: pointer;
-      border-radius: 10px;
-    }
-
-    /* Auto display button */
-    #autoDisplay {
-      margin: 20px auto;
-      text-align: center;
-      padding: 20px 0;
-    }
-
-    .rounded-button {
-      padding: 10px 20px;
-      border: 2px solid #fff; /* White border */
-      background-color: transparent;
-      color: #fff; /* White text */
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .rounded-button:hover {
-      background-color: #fff; /* White background on hover */
-      color: #333; /* Dark grey text on hover */
-    }
-
-    .rounded-button:active {
-      transform: scale(0.95);
     }
   </style>
 </head>
 <body>
-  <!-- Curio Title/Logo -->
-  <div id="curioTitle">
-    <img id="curioLogo" src="./Asset%201.svg" alt="Curio Logo">
+  <!-- Logo -->
+  <div id="logo">
+    <img src="/images/logo.svg" alt="Curio Logo">
   </div>
 
   <!-- Upload Section -->
   <div id="uploadSection">
     <form id="uploadForm" enctype="multipart/form-data">
-      <span>No file chosen</span>
       <input type="file" name="photo" accept="image/*" required>
-      <button class="upload-button" type="submit">Upload Photo</button>
+      <button type="submit">Upload</button>
     </form>
   </div>
 
   <!-- Photo Gallery -->
   <div id="gallery"></div>
 
-  <!-- Auto Display Button -->
-  <div id="autoDisplay">
-    <button class="rounded-button" id="toggleAutoScroll">Auto Display</button>
-  </div>
-
   <script>
-    const baseURL = window.location.origin;
     const gallery = document.getElementById('gallery');
-    const uploadSection = document.getElementById('uploadSection');
-    const autoScrollButton = document.getElementById('toggleAutoScroll');
-    let lastScrollY = window.scrollY;
-    let autoScrollInterval = null;
-    let isAutoScrolling = false;
-    let userScrolling = false;
-
-    // Show/Hide Upload Section on Scroll
-    window.addEventListener('scroll', () => {
-      if (window.scrollY < lastScrollY) {
-        uploadSection.style.display = 'block';
-      } else if (window.scrollY > 100) {
-        uploadSection.style.display = 'none';
-      }
-      lastScrollY = window.scrollY;
-
-      if (isAutoScrolling) {
-        userScrolling = true;
-        clearInterval(autoScrollInterval);
-        isAutoScrolling = false;
-        autoScrollButton.textContent = 'Auto Display';
-      }
-    });
+    const uploadForm = document.getElementById('uploadForm');
 
     // Fetch and display photos
     async function loadPhotos() {
       try {
-        const response = await fetch(`${baseURL}/photos`);
+        const response = await fetch('/photos');
         const photos = await response.json();
         gallery.innerHTML = photos.map(photo => `
           <div class="photo-container">
-            <img 
-              src="${baseURL}${photo}" 
-              alt="Photo"
-              data-filename="${photo.replace('/', '')}"
-            >
-            <div class="delete-overlay" onclick="confirmDeletePhoto('${photo.replace('/', '')}')">Delete?</div>
+            <img src="${photo}" alt="Photo">
+            <div class="delete-overlay" onclick="deletePhoto('${photo.split('/').pop()}')">Delete</div>
           </div>
         `).join('');
-      } catch (error) {
-        console.error('Error loading photos:', error);
-        gallery.innerHTML = '<p>Failed to load photos.</p>';
+      } catch (err) {
+        console.error('Error loading photos:', err);
       }
     }
 
-    // Confirm delete photo
-    async function confirmDeletePhoto(filename) {
-      if (confirm(`Are you sure you want to delete this photo?`)) {
-        await deletePhoto(filename);
-      }
-    }
+    // Handle photo upload
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(uploadForm);
 
-    // Delete photo from backend
-    async function deletePhoto(filename) {
       try {
-        const response = await fetch(`${baseURL}/photos/${filename}`, {
-          method: 'DELETE',
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          alert('Photo uploaded successfully!');
+          loadPhotos();
+        } else {
+          alert('Failed to upload photo.');
+        }
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+      }
+    });
+
+    // Delete photo
+    async function deletePhoto(filename) {
+      if (!confirm('Are you sure you want to delete this photo?')) return;
+
+      try {
+        const response = await fetch(`/photos/${filename}`, {
+          method: 'DELETE'
         });
 
         if (response.ok) {
@@ -261,66 +179,13 @@
         } else {
           alert('Failed to delete photo.');
         }
-      } catch (error) {
-        console.error('Error deleting photo:', error);
-        alert('An error occurred. Please try again.');
+      } catch (err) {
+        console.error('Error deleting photo:', err);
       }
     }
 
-    // Handle auto-scroll logic
-    function startAutoScroll() {
-      if (isAutoScrolling) return;
-
-      isAutoScrolling = true;
-      userScrolling = false;
-      autoScrollButton.textContent = 'Stop Auto Display';
-
-      autoScrollInterval = setInterval(() => {
-        if (!userScrolling && gallery.scrollTop + gallery.clientHeight < gallery.scrollHeight) {
-          gallery.scrollBy(0, 2);
-        } else if (!userScrolling && gallery.scrollTop + gallery.clientHeight >= gallery.scrollHeight) {
-          gallery.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }, 30);
-    }
-
-    function stopAutoScroll() {
-      clearInterval(autoScrollInterval);
-      isAutoScrolling = false;
-      autoScrollButton.textContent = 'Auto Display';
-    }
-
-    autoScrollButton.addEventListener('click', () => {
-      if (isAutoScrolling) {
-        stopAutoScroll();
-      } else {
-        startAutoScroll();
-      }
-    });
-
-    // Handle photo uploads
-    const uploadForm = document.getElementById('uploadForm');
-    uploadForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent default form submission behavior
-      const formData = new FormData(uploadForm); // Create FormData object from the form
-
-      try {
-        const response = await fetch(`${baseURL}/upload`, {
-          method: 'POST', // Use POST to send the file
-          body: formData, // Attach form data
-        });
-
-        if (response.ok) {
-          alert('Photo uploaded successfully!');
-          loadPhotos(); // Reload the gallery to include the new photo
-        } else {
-          alert('Failed to upload photo.');
-        }
-      } catch (error) {
-        console.error('Error uploading photo:', error);
-        alert('An error occurred. Please try again.');
-      }
-    });
-
-    // Load photos when the page is loaded
+    // Initial photo load
     loadPhotos();
+  </script>
+</body>
+</html>
