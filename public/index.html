@@ -12,6 +12,7 @@
       color: #333;
     }
 
+    /* Welcome Section */
     #welcome {
       text-align: center;
       padding: 50px 20px;
@@ -63,6 +64,29 @@
       transform: scale(0.95);
     }
 
+    /* Feedback Section */
+    #feedback {
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      background-color: #fff;
+      border-top: 1px solid #ddd;
+      font-size: 1rem;
+      color: #555;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Improved visibility */
+    }
+
+    #feedback a {
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    #feedback a:hover {
+      text-decoration: underline;
+    }
+
+    /* Gallery Section */
     #gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -108,29 +132,10 @@
       cursor: pointer;
       border-radius: 10px;
     }
-
-    #feedback {
-      text-align: center;
-      margin-top: 30px;
-      padding: 20px;
-      background-color: #fff;
-      border-top: 1px solid #ddd;
-      font-size: 1rem;
-      color: #555;
-    }
-
-    #feedback a {
-      color: #007BFF;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    #feedback a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
+  <!-- Welcome Section -->
   <div id="welcome">
     <h1>Welcome to Curio</h1>
     <form id="uploadForm" enctype="multipart/form-data">
@@ -139,13 +144,15 @@
     </form>
   </div>
 
-  <div id="gallery"></div>
-
   <!-- Feedback Section -->
   <div id="feedback">
     Thank you for participating in our Curio testing journey. We appreciate your feedback. <br>
-    <a href="https://forms.gle/Cw4LBDWipGXYBsdF9" target="_blank">Give Feedback</a>
+    <a href="https://forms.gle/Cw4LBDWipGXYBsdF9" target="_blank">Give Feedback</a><br>
+    If the button above is not working, please upload your pictures in the Google form. Your input is really important for our project and much appreciated ⭐️.
   </div>
+
+  <!-- Gallery Section -->
+  <div id="gallery"></div>
 
   <script>
     const baseURL = window.location.origin;
@@ -234,6 +241,17 @@
 
     // Initial load of photos
     loadPhotos();
+
+    // Debugging: Ensure feedback section is recognized
+    document.addEventListener('DOMContentLoaded', () => {
+      const feedbackSection = document.getElementById('feedback');
+      if (!feedbackSection) {
+        console.error('Feedback section not found in the DOM.');
+      } else {
+        console.log('Feedback section loaded successfully.');
+      }
+    });
   </script>
 </body>
 </html>
+
