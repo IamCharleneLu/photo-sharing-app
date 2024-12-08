@@ -108,6 +108,26 @@
       cursor: pointer;
       border-radius: 10px;
     }
+
+    #feedback {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #fff;
+      border-top: 1px solid #ddd;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    #feedback a {
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    #feedback a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -120,6 +140,12 @@
   </div>
 
   <div id="gallery"></div>
+
+  <!-- Feedback Section -->
+  <div id="feedback">
+    Thank you for participating in our Curio testing journey. We appreciate your feedback. <br>
+    <a href="https://forms.gle/Cw4LBDWipGXYBsdF9" target="_blank">Give Feedback</a>
+  </div>
 
   <script>
     const baseURL = window.location.origin;
